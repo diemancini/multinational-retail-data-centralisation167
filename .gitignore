@@ -1,0 +1,8 @@
+/config/db_creds.yaml
+/config/db_creds_local.yaml
+/config/config.yaml
+/*.txt
+/sketch.py
+/__pycache__
+/sql_queries
+/data
