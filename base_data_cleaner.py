@@ -9,6 +9,51 @@ from pandas import DataFrame
 
 class BaseDataCleaner:
 
+    _INDEX = "index"
+    _INDEX_ADDRESS = "address"
+    _INDEX_CARD_NUMBER = "card_number"
+    _INDEX_CARD_PROVIDER = "card_provider"
+    _INDEX_COMPANY = "company"
+    _INDEX_CATEGORY = "category"
+    _INDEX_CONTINENT = "continent"
+    _INDEX_COUNTRY = "country"
+    _INDEX_COUNTRY_CODE = "country_code"
+    _INDEX_DATE_ADDED = "date_added"
+    _INDEX_DATE_OF_BIRTH = "date_of_birth"
+    _INDEX_DATE_PAYMENT_CONFIRMED = "date_payment_confirmed"
+    _INDEX_DATE_UUID = "date_uuid"
+    _INDEX_DAY = "day"
+    _INDEX_EMAIL_ADDRESS = "email_address"
+    _INDEX_EAN = "ean"
+    _INDEX_EXPIRY_DATE = "expiry_date"
+    _INDEX_FIRST_NAME = "first_name"
+    _INDEX_JOIN_DATE = "join_date"
+    _INDEX_LAST_NAME = "last_name"
+    _INDEX_LAT = "lat"
+    _INDEX_LATITUDE = "latitude"
+    _INDEX_LOCALITY = "locality"
+    _INDEX_LONGITUDE = "longitude"
+    _INDEX_MONTH = "month"
+    _INDEX_OPENING_DATE = "opening_date"
+    _INDEX_PHONE_NUMBER = "phone_number"
+    _INDEX_PRODUCT_CODE = "product_code"
+    _INDEX_PRODUCT_NAME = "product_name"
+    _INDEX_PRODUCT_QUANTITY = "product_quantity"
+    _INDEX_PRODUCT_PRICE = "product_price"
+    _INDEX_REMOVED = "removed"
+    _INDEX_STAFF_NUMBERS = "staff_numbers"
+    _INDEX_STORE_TYPE = "store_type"
+    _INDEX_STORE_CODE = "store_code"
+    _INDEX_TIME_PERIOD = "time_period"
+    _INDEX_TIMESTAMP = "timestamp"
+    _INDEX_USER_UUID = "user_uuid"
+    _INDEX_UUID = "uuid"
+    _INDEX_WEIGHT = "weight"
+    _INDEX_YEAR = "year"
+
+    _STRING_NULL = "NULL"
+    _STRING_NA = "N/A"
+
     __MAP_COUNTRY_CODE = {
         "DE": "Germany",
         "GB": "United Kingdom",
@@ -50,15 +95,15 @@ class BaseDataCleaner:
     def clean_strings(self, string: str) -> Union[str, None]:
         if (
             not string
-            or string == "NULL"
-            or string == "N/A"
+            or string == self._STRING_NULL
+            or string == self._STRING_NA
             or re.search(r"\d", string)
         ):
             string = None
         return string
 
     def clean_strings_with_numbers(self, string: str) -> Union[str, None]:
-        if not string or string == "NULL" or string == "N/A":
+        if not string or string == self._STRING_NULL or string == self._STRING_NA:
             string = None
         return string
 
@@ -143,7 +188,7 @@ class BaseDataCleaner:
         for key, value in self.__MAP_COUNTRY_CODE.items():
             if key == country_code and country not in self.__COUNTRIES:
                 new_country = value
-        if country == "NULL" or re.search(r"\d", country):
+        if country == self._STRING_NULL or re.search(r"\d", country):
             new_country = None
 
         return new_country
@@ -161,7 +206,8 @@ class BaseDataCleaner:
             try:
                 if self.__MAP_COUNTRY_CODE[new_country_code]:
                     return new_country_code
-            except KeyError:
+            except KeyError as e:
+                print(e)
                 for key, value in self.__MAP_COUNTRY_CODE.items():
                     if value == country:
                         new_country_code = key
@@ -170,7 +216,6 @@ class BaseDataCleaner:
         else:
             country_codes = [key for key, value in self.__MAP_COUNTRY_CODE.items()]
             if new_country_code not in country_codes:
-                print(new_country_code)
                 new_country_code = None
 
         return new_country_code
@@ -184,7 +229,7 @@ class BaseDataCleaner:
         """
         new_phone_number = phone_number
         regex = r"[a-zA-Z-\s\-\.\(\)]+"
-        if phone_number == "NULL":
+        if phone_number == self._STRING_NULL:
             new_phone_number = None
         elif re.search(regex, phone_number) is not None:
             new_phone_number = re.sub(r"[a-zA-Z\(\)\s\-\.]", "", phone_number)
@@ -245,7 +290,6 @@ class BaseDataCleaner:
         try:
             new_number = float(new_number)
         except (ValueError, TypeError):
-            print("This is not a valid float number")
             regex_number_card = r"(?=\D+)(?=\.)"
             if re.search(regex_number_card, str(number)) is None:
                 new_number = None
@@ -324,7 +368,7 @@ class BaseDataCleaner:
             try:
                 new_weight /= 1000
             except TypeError as e:
-                print(f"Error type with {new_weight}: {e}")
+                print(f"Error type with the weight {new_weight}: {e}")
                 new_weight = None
 
         if isinstance(new_weight, str) and re.search(r"(\D)", new_weight):
@@ -522,9 +566,9 @@ class BaseDataCleaner:
         new_df: DataFrame = df.copy()
         try:
             columns: List[str] = [column for column in new_df.columns]
-            columns.remove("latitude")
-            longitude_index: int = columns.index("longitude")
-            columns.insert(longitude_index, "latitude")
+            columns.remove(self._INDEX_LATITUDE)
+            longitude_index: int = columns.index(self._INDEX_LONGITUDE)
+            columns.insert(longitude_index, self._INDEX_LATITUDE)
             new_df: DataFrame = new_df[columns]
             columns: List[str] = [column for column in new_df.columns]
         except:

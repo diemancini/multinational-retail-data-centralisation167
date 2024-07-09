@@ -2,24 +2,69 @@ from data_cleaning import DataCleaning
 from database_utils import DatabaseConnector
 from data_extraction import DataExtractor
 
+from pandas import DataFrame
+
 from sqlalchemy import (
     BIGINT,
     BigInteger,
     Boolean,
     Date,
     Float,
-    Engine,
-    Integer,
-    NVARCHAR,
     SmallInteger,
     UUID,
     VARCHAR,
+    exc,
 )
 
 
-# TASK 3
 class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
 
+    def create_orders_table(func):
+        """
+        **** DECORATOR FUNCTION ****
+        Any of upload dim functions must have be executed only if the orders table
+        was already created in database. This decorator 'forcing' the creation of
+        the orders table.
+        """
+
+        def wrapper(self):
+            Tasks.upload_orders_table(self)
+            print(f"EXECUTING {func.__name__}...")
+            func(self)
+
+        return wrapper
+
+    def upload_orders_table(self) -> bool:
+        """
+        This function will execute the tasks implemented below:
+            TASK 7 in MILESTONE 2
+
+        In order to run any others upload dim tables functions of this class(upload_dim_products, for instance),
+        this function must to be called first(just one time).
+        """
+        # TASK 7 (MILESTONE 2)
+        try:
+            select_query: str = f"SELECT * FROM orders_table LIMIT 2"
+            df: DataFrame = self.select_db(select_query)
+            if not df.empty:
+                print("-" * 30)
+                print(f"THE 'ORDERS TABLE' WAS ALREADY CREATED BEFORE!")
+        except exc.ProgrammingError as e:
+            print(f"CREATING ORDERS TABLE.. :\n{e}")
+            tables = self.list_db_tables()
+            df = self.read_rds_table(DatabaseConnector(), tables[-1])
+            df = self.clean_orders_data(df)
+            columns_types = {
+                "date_uuid": UUID,
+                "user_uuid": UUID,
+                "card_number": VARCHAR(length=20),
+                "store_code": VARCHAR(length=20),
+                "product_code": VARCHAR(length=20),
+                "product_quantity": SmallInteger,
+            }
+            self.upload_to_db(df, "orders_table", column_types=columns_types)
+
+    @create_orders_table
     def upload_dim_users(self):
         """
         This function will execute the tasks implemented below:
@@ -49,6 +94,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
             pk_column="user_uuid",
         )
 
+    @create_orders_table
     def upload_dim_card_details(self):
         """
         This function will execute the tasks implemented below:
@@ -82,6 +128,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
             pk_column="card_number",
         )
 
+    @create_orders_table
     def upload_dim_store_details(self):
         """
         This function will execute the tasks implemented below:
@@ -140,6 +187,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
             pk_column="store_code",
         )
 
+    @create_orders_table
     def upload_dim_products(self):
         """
         This function will execute the tasks implemented below:
@@ -202,28 +250,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
             pk_column="product_code",
         )
 
-    def upload_orders_table(self):
-        """
-        This function will execute the tasks implemented below:
-            TASK 7 in MILESTONE 2
-
-        In order to run any others upload dim tables functions of this class(upload_dim_products, for instance),
-        this function must to be called first(just one time).
-        """
-        # TASK 7 (MILESTONE 2)
-        tables = self.list_db_tables()
-        df = self.read_rds_table(DatabaseConnector(), tables[-1])
-        df = self.clean_orders_data(df)
-        columns_types = {
-            "date_uuid": UUID,
-            "user_uuid": UUID,
-            "card_number": VARCHAR(length=20),
-            "store_code": VARCHAR(length=20),
-            "product_code": VARCHAR(length=20),
-            "product_quantity": SmallInteger,
-        }
-        self.upload_to_db(df, "orders_table", column_types=columns_types)
-
+    @create_orders_table
     def upload_dim_date_times(self):
         """
         This function will execute the tasks implemented below:
@@ -259,22 +286,49 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
             pk_column="date_uuid",
         )
 
-    # def upload_dim_(self):
-    #     """
-    #     This function will execute the tasks implemented below:
-    #         TASK 3 in MILESTONE 2
-    #         TASK 2 in MILESTONE 3
-    #         TASK 8 in MILESTONE 3
-    #         TASK 9 in MILESTONE 3
-    #     """
-
 
 if __name__ == "__main__":
-    tasks = Tasks()
+    try:
+        text = (
+            ""
+            "Please, which dim table you want to be created?\n\n"
+            "0 - ALL\n"
+            "1 - DIM_USERS\n"
+            "2 - DIM_CARD_DETAILS\n"
+            "3 - DIM_STORE_DETAILS\n"
+            "4 - DIM_PRODUCTS\n"
+            "5 - DIM_DATE_TIMES\n\n"
+        )
+        tasks = Tasks()
+        answer = int(input(f"{text}"))
+        if answer == 0:
+            print(f"Creating all existing tables...")
+            tasks.upload_dim_users()
+            tasks.upload_dim_card_details()
+            tasks.upload_dim_store_details()
+            tasks.upload_dim_products()
+            tasks.upload_dim_date_times()
+
+        elif answer == 1:
+            tasks.upload_dim_users()
+        elif answer == 2:
+            tasks.upload_dim_card_details()
+        elif answer == 3:
+            tasks.upload_dim_store_details()
+        elif answer == 4:
+            tasks.upload_dim_products()
+        elif answer == 5:
+            tasks.upload_dim_date_times()
+        else:
+            print(f"INVALID OPTION. Select one of the options above")
+
+    except ValueError as e:
+        print(f"ERROR -> INVALID NUMBER{e}")
     # tasks.upload_orders_table()
 
     # tasks.upload_dim_users()
     # tasks.upload_dim_card_details()
     # tasks.upload_dim_store_details()
-    tasks.upload_dim_products()
+    # tasks.upload_dim_products()
     # tasks.upload_dim_date_times()
+    # Tasks.upload_dim_date_times()

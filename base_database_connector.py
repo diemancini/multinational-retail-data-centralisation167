@@ -12,6 +12,10 @@ class BaseDatabaseConnector:
     __DB_PORT = "PORT"
     __DB_DATABASE = "DATABASE"
 
+    __SMALLINT = "SMALLINT"
+    __SMALL_INTEGER = "small_integer"
+    __VARCHAR = "VARCHAR"
+
     _COLUMN_TYPE = 1  # It will be used as a index in the list
 
     def _read_db_creds(self, filename: str) -> Dict:
@@ -39,9 +43,9 @@ class BaseDatabaseConnector:
         return engine
 
     def _convert_sqlalquemy_data_type_to_string(self, column: str) -> str:
-        if column.__visit_name__ == "small_integer":
-            return "SMALLINT"
-        elif column.__visit_name__ == "VARCHAR":
+        if column.__visit_name__ == self.__SMALL_INTEGER:
+            return self.__SMALLINT
+        elif column.__visit_name__ == self.__VARCHAR:
             length = column.__getattribute__("length")
             return f"{column.__visit_name__}({length})"
         else:
@@ -59,8 +63,8 @@ class BaseDatabaseConnector:
         """
         create_query = f"CREATE TABLE IF NOT EXISTS {table_name} (\n"
         for column in columns:
-            column[self.__COLUMN_TYPE] = self._convert_sqlalquemy_data_type_to_string(
-                column[self.__COLUMN_TYPE]
+            column[self._COLUMN_TYPE] = self._convert_sqlalquemy_data_type_to_string(
+                column[self._COLUMN_TYPE]
             )
             for attribute in column:
                 create_query += f"\t\t{ attribute}"
