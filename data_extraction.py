@@ -38,7 +38,7 @@ class DataExtractor:
         Get all tables from postgres database where schema is 'public'
         """
         db: DatabaseConnector = DatabaseConnector()
-        engine: Engine = db.init_db_engine()
+        engine: Engine = db.init_db_engine(is_localhost=False)
         connection: Connection = engine.connect()
         tables: CursorResult = connection.execute(
             text(
@@ -51,7 +51,7 @@ class DataExtractor:
         """
         Read data from postgres table using pandas.
         """
-        engine: Engine = db.init_db_engine()
+        engine: Engine = db.init_db_engine(is_localhost=False)
         sql: str = f"SELECT * FROM {table_name}"
         df: DataFrame = pd.read_sql(sql, con=engine)
         return df

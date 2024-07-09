@@ -24,7 +24,7 @@ from database_utils import DatabaseConnector
 from base_data_cleaner import BaseDataCleaner
 
 
-class DataCleaning(BaseDataCleaner):
+class DataCleaning(BaseDataCleaner, DatabaseConnector):
 
     def clean_user_data(self, table_name: str) -> DataFrame:
         """
@@ -193,6 +193,7 @@ class DataCleaning(BaseDataCleaner):
         Parameters:
             - df: Dataframe
         """
+        df.reset_index(inplace=True)
         for index, row in df.iterrows():
             df.at[index, "date_uuid"] = self.clean_uuid(row["date_uuid"])
             df.at[index, "time_period"] = self.clean_time_period(row["time_period"])
@@ -203,11 +204,8 @@ class DataCleaning(BaseDataCleaner):
 
         return df
 
-    def add_data_into_weight_class(self, db: DatabaseConnector) -> None:
+    def add_data_into_weight_class(self) -> None:
         """
-        Parameters:
-            - db: DatabaseConnector
-
         OBS:
             # +--------------------------+-------------------+
             # | weight_class VARCHAR(?)  | weight range(kg)  |
@@ -224,7 +222,7 @@ class DataCleaning(BaseDataCleaner):
         TRUCK_REQUIRED = "Truck_Required"
 
         select_query = "SELECT index, weight FROM dim_products;"
-        df: DataFrame = db.select_db(select_query)
+        df: DataFrame = self.select_db(select_query)
         # df: DataFrame = pd.read_sql(select_query, con=engine)
         for index, row in df.iterrows():
             weight = row["weight"]
@@ -238,7 +236,7 @@ class DataCleaning(BaseDataCleaner):
                 weight_class = TRUCK_REQUIRED
 
             insert_query = f"UPDATE dim_products set weight_class='{weight_class}' WHERE index={row['index']}"
-            db.insert_db(insert_query)
+            self.insert_db(insert_query, output=False)
 
     def remove_character_from_column_value(
         self, table_name: str, column_name: str, value: str, new_value: str
@@ -252,9 +250,8 @@ class DataCleaning(BaseDataCleaner):
         """
         # UPDATE posts
         # SET url = REPLACE(url, 'http','https');
-        select_query = f"SELECT index, {column_name} FROM {table_name};"
         update_query = f"UPDATE {table_name} set {column_name} = REPLACE({column_name}, '{value}', '{new_value}')"
-        db.insert_db(update_query)
+        self.insert_db(update_query)
         # df: DataFrame = db.select_db(select_query)
         # for index, row in df.iterrows():
 
@@ -268,13 +265,13 @@ class DataCleaning(BaseDataCleaner):
             - value: string -> String value that will be used for validating TRUE statement.
         """
         select_query = f"SELECT index, {column_name} FROM {table_name};"
-        df: DataFrame = db.select_db(select_query)
+        df: DataFrame = self.select_db(select_query)
         for index, row in df.iterrows():
             is_true = True
             if row[column_name] != value:
                 is_true = False
             update_query = f"UPDATE {table_name} set {column_name}={is_true} WHERE index={row['index']}"
-            db.insert_db(update_query)
+            self.insert_db(update_query, output=False)
 
 
 if __name__ == "__main__":
