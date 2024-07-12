@@ -93,6 +93,10 @@ class BaseDataCleaner:
     __TIME_PERIOD = ["Morning", "Evening", "Midday", "Late_Hours"]
 
     def clean_strings(self, string: str) -> Union[str, None]:
+        """
+        * Parameters:
+            - string: string
+        """
         if (
             not string
             or string == self._STRING_NULL
@@ -103,6 +107,7 @@ class BaseDataCleaner:
         return string
 
     def clean_strings_with_numbers(self, string: str) -> Union[str, None]:
+        """ """
         if not string or string == self._STRING_NULL or string == self._STRING_NA:
             string = None
         return string
@@ -111,7 +116,7 @@ class BaseDataCleaner:
         """
         Check if the date string is in date format.
 
-        Parameters:
+        * Parameters:
             - date: string
             - format: string -> Pattern of date
         """
@@ -129,7 +134,7 @@ class BaseDataCleaner:
         """
         Convert datetime fields to %Y-%m-%d format. Otherwise,  or None.
 
-        Parameters:
+        * Parameters:
             - date: string
         """
         if self.__check_date_format(date, "%Y-%m-%d"):
@@ -147,7 +152,7 @@ class BaseDataCleaner:
         """
         Check if the continent has the right classification. Otherwise, try to clean it.
 
-        Parameters:
+        * Parameters:
             - email: string
         """
         new_continent: str = continent
@@ -164,7 +169,7 @@ class BaseDataCleaner:
         """
         Clean the email that contains 0, 2 or more '@' character(s).
 
-        Parameters:
+        * Parameters:
             - email: string
         """
         regex: str = r"^[\w0-9_.+-]+@[\w-]{2,}\.[\w]{2,}[\.\w]{0,}$"
@@ -180,7 +185,7 @@ class BaseDataCleaner:
 
     def clean_country(self, country: str, country_code: str) -> Union[str, None]:
         """
-        Parameters:
+        * Parameters:
             - country: string
             - country_code: string
         """
@@ -197,7 +202,7 @@ class BaseDataCleaner:
         self, country: str = None, country_code: str = None
     ) -> Union[str, None]:
         """
-        Parameters:
+        * Parameters:
             - country: string
             - country_code: string
         """
@@ -224,7 +229,7 @@ class BaseDataCleaner:
         """
         Removes any alphabetic and special character (except plus sign) from the phone numbers.
 
-        Parameters:
+        * Parameters:
             - phone_number: string
         """
         new_phone_number = phone_number
@@ -240,7 +245,7 @@ class BaseDataCleaner:
         """
         Genereates new random uuid if uuid code is not valid.
 
-        Parameters:
+        * Parameters:
             - uuid: str|uuid
         """
         new_uuid: str = uuid_code
@@ -253,13 +258,15 @@ class BaseDataCleaner:
 
         return new_uuid
 
-    def clean_integer_number(self, number: Union[str, int]) -> Union[int, None]:
+    def clean_integer_number(
+        self, number: Union[str, int], min_digits: int = 10
+    ) -> Union[int, None]:
         """
         Convert to integer if the number parameter is string.
         If does not, try to remove any non number digit in that string.
 
-        Parameters:
-            number: integer|string
+        * Parameters:
+            - number: integer|string
         """
         new_number = number
         try:
@@ -267,10 +274,10 @@ class BaseDataCleaner:
             new_number = int(new_number)
         except ValueError:
             ValueError("This is not a valid integer number")
-            regex_number_card = r"\D+"
-            if re.search(regex_number_card, str(number)) is not None:
+            regex_number = r"\D+"
+            if re.search(regex_number, str(number)) is not None:
                 new_number = re.sub(r"\D+", "", number)
-                if new_number and len(str(new_number)) > 10:
+                if new_number and len(str(new_number)) > min_digits:
                     new_number = int(new_number)
                 else:
                     new_number = None
@@ -283,22 +290,22 @@ class BaseDataCleaner:
         If does not, check if has any non number digit and dot (.) in that string.
         Otherwise, return None.
 
-        Parameters:
+        * Parameters:
             - number: string|float
         """
         new_number: Union[str, float] = number
         try:
             new_number = float(new_number)
         except (ValueError, TypeError):
-            regex_number_card = r"(?=\D+)(?=\.)"
-            if re.search(regex_number_card, str(number)) is None:
+            regex_number = r"(?=\D+)(?=\.)"
+            if re.search(regex_number, str(number)) is None:
                 new_number = None
 
         return new_number
 
     def clean_expiry_date(self, expiry_date: str) -> Union[str, None]:
         """
-        Parameters:
+        * Parameters:
             - expiry_date: string
         """
         new_expiry_date: str = expiry_date
@@ -311,7 +318,7 @@ class BaseDataCleaner:
         """
         Check if the card provider is not in the valid card providers listed names.
 
-        Parameters:
+        * Parameters:
             - card_provider: string
         """
         new_card_provider: str = card_provider
@@ -323,7 +330,7 @@ class BaseDataCleaner:
         """
         Check if the store code has XX-XXXXXXXX pattern, where X is a alphabet or digital number.
 
-        Parameters:
+        * Parameters:
             - store_code: string
         """
         new_store_code: str = store_code
@@ -336,7 +343,7 @@ class BaseDataCleaner:
         """
         Check if the store type is a NULL, N/A string value or is not in the store type list.
 
-        Parameters:
+        * Parameters:
             - store_type: string
         """
         new_store_type: str = self.clean_strings_with_numbers(store_type)
@@ -349,7 +356,7 @@ class BaseDataCleaner:
         Check if the weight measure is in KG.
         If is not, convert the weight to decimal value representing their weight in kg.
 
-        Parameters:
+        * Parameters:
             - weight: string
         """
         new_weight: str = weight
@@ -380,7 +387,7 @@ class BaseDataCleaner:
         """
         Verify if the removed has the right classification.
 
-        Parameters:
+        * Parameters:
             - removed: string
         """
         if removed not in self.__REMOVED_ITEM:
@@ -391,7 +398,7 @@ class BaseDataCleaner:
         """
         Verify if the category has the right classification.
 
-        Parameters:
+        * Parameters:
             - category: string
         """
         if category not in self.__PRODUCTS_CATEGORY:
@@ -402,7 +409,7 @@ class BaseDataCleaner:
         """
         Verify if the ean is a valid number.
 
-        Parameters:
+        * Parameters:
             - ean: string|integer
         """
         new_ean: str = ean
@@ -418,7 +425,7 @@ class BaseDataCleaner:
         """
         Verify if the product name is a valid string.
 
-        Parameters:
+        * Parameters:
             - product_name: string
         """
         new_product_name: str = product_name
@@ -437,7 +444,7 @@ class BaseDataCleaner:
         where:
             x : string belongs to integer number.
 
-        Parameters:
+        * Parameters:
             - product_price: string
         """
         new_product_price: str = product_price
@@ -459,7 +466,7 @@ class BaseDataCleaner:
 
         And product code could has more than 5 characters.
 
-        Parameters:
+        * Parameters:
             - product_code: string
         """
         new_product_code: str = product_code
@@ -475,7 +482,7 @@ class BaseDataCleaner:
         """
         Verify if time period has the right classification.
 
-        Parameters:
+        * Parameters:
             - time_period: string
         """
         if time_period not in self.__TIME_PERIOD:
@@ -486,7 +493,7 @@ class BaseDataCleaner:
         """
         Verify if the timestamp is in format HH:MM:SS.
 
-        Parameters:
+        * Parameters:
             - timestamp: string
         """
         try:
@@ -499,7 +506,7 @@ class BaseDataCleaner:
         """
         Verify if the day is a valid day number.
 
-        Parameters:
+        * Parameters:
             - day: int|string
         """
         try:
@@ -512,7 +519,7 @@ class BaseDataCleaner:
         """
         Verify if the month is a valid month number.
 
-        Parameters:
+        * Parameters:
             - month: int|string
         """
         try:
@@ -525,7 +532,7 @@ class BaseDataCleaner:
         """
         Verify if the year is a valid year number.
 
-        Parameters:
+        * Parameters:
             - year: int|string
         """
         try:
@@ -538,8 +545,8 @@ class BaseDataCleaner:
         """
         Convert string weight to float.
 
-        Parameters:
-            - weight: str
+        * Parameters:
+            - weight: string
             - regex: regular expression -> It could be in KG or G.
         """
         try:
@@ -560,7 +567,7 @@ class BaseDataCleaner:
         """
         Sort columns of store data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
         new_df: DataFrame = df.copy()

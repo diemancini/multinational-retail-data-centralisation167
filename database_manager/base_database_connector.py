@@ -6,22 +6,24 @@ import yaml
 
 
 class BaseDatabaseConnector:
-    __DB_USER = "USER"
-    __DB_PASSWORD = "PASSWORD"
-    __DB_HOST = "HOST"
-    __DB_PORT = "PORT"
-    __DB_DATABASE = "DATABASE"
+    __DB_USER: str = "USER"
+    __DB_PASSWORD: str = "PASSWORD"
+    __DB_HOST: str = "HOST"
+    __DB_PORT: str = "PORT"
+    __DB_DATABASE: str = "DATABASE"
 
-    __SMALLINT = "SMALLINT"
-    __SMALL_INTEGER = "small_integer"
-    __VARCHAR = "VARCHAR"
+    __SMALLINT: str = "SMALLINT"
+    __SMALL_INTEGER: str = "small_integer"
+    __VARCHAR: str = "VARCHAR"
 
-    _COLUMN_TYPE = 1  # It will be used as a index in the list
+    # It will be used as a index in the list
+    _COLUMN_NAME: int = 0
+    _COLUMN_TYPE: int = 1
 
     def _read_db_creds(self, filename: str) -> Dict:
         """
         Read credentials DB
-        Parameters:
+        * Parameters:
             - filename: str
         """
         with open(filename, "r") as file:
@@ -56,7 +58,7 @@ class BaseDatabaseConnector:
         Create dim table in repository with hardcode query.
         The df.to_sql creates the table and insert data automatically, making this function unnecessary.
 
-        Parameters:
+        * Parameters:
             - engine:
             - table_name: string
             - columns: string
@@ -73,13 +75,24 @@ class BaseDatabaseConnector:
         create_query = create_query[:-2] + "\n);"
         self.commit_db(engine=engine, query=create_query)
 
+    def _drop_foreign_key(self, engine: Engine, table_name: str):
+        """
+        * Parameters:
+            - engine: Engine
+            - table_name: string
+        """
+        delete_query: str = (
+            f"ALTER TABLE orders_table DROP CONSTRAINT {table_name}_orders_table_fk;"
+        )
+        self.commit_db(engine=engine, query=delete_query)
+
     def _drop_table(self, engine: Engine, table_name: str):
         """
-        Parameters:
+        * Parameters:
             - engine: Engine
-            - table_name: str)
+            - table_name: string
         """
-        delete_query = f"DROP TABLE {table_name};"
+        delete_query = f"DROP TABLE {table_name} CASCADE;"
         self.commit_db(engine=engine, query=delete_query)
 
     def _insert_data(self, engine, table_name, df):
@@ -98,7 +111,7 @@ class BaseDatabaseConnector:
         self, engine: Engine, query: str, data: List = None, output: bool = True
     ):
         """
-        Parameters:
+        * Parameters:
             - engine: Engine
             - query: string
         """

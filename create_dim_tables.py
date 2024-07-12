@@ -1,6 +1,7 @@
-from data_cleaning import DataCleaning
-from database_utils import DatabaseConnector
-from data_extraction import DataExtractor
+from database_manager.data_cleaning import DataCleaning
+from database_manager.database_utils import DatabaseConnector
+from database_manager.data_extraction import DataExtractor
+
 
 from pandas import DataFrame
 
@@ -17,18 +18,18 @@ from sqlalchemy import (
 )
 
 
-class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
+class CreateDimTables(DataCleaning, DatabaseConnector, DataExtractor):
 
     def create_orders_table(func):
         """
         **** DECORATOR FUNCTION ****
         Any of upload dim functions must have be executed only if the orders table
-        was already created in database. This decorator 'forcing' the creation of
+        was already created in database. This decorator 'force' the creation of
         the orders table.
         """
 
         def wrapper(self):
-            Tasks.upload_orders_table(self)
+            CreateDimTables.upload_orders_table(self)
             print(f"EXECUTING {func.__name__}...")
             func(self)
 
@@ -113,6 +114,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
         self.upload_to_db(df, "dim_card_details", columns_types)
         # TASK 7 (MILESTONE 3)
         columns = [
+            ["index", BIGINT],
             ["card_number", VARCHAR(30)],
             ["expiry_date", VARCHAR(5)],
             ["date_payment_confirmed", Date],
@@ -141,7 +143,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
         number_of_stores = self.list_number_of_stores()
         df = self.retrieve_stores_data(number_of_stores)
         df_cleaned = self.clean_store_data(df)
-        columns_type = [
+        columns = [
             ["index", BIGINT],
             ["address", VARCHAR(255)],
             ["longitude", Float],
@@ -157,9 +159,8 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
         self.upload_to_db(
             df_cleaned,
             "dim_store_details",
-            columns_type,
-            is_constraints=True,
-            drop_table=True,
+            column_types=columns,
+            using_query=True,
         )
         # TASK 3 (MILESTONE 3)
         # This part of the code doesn't need to be run, because the task
@@ -203,8 +204,25 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
         )
         df = self.convert_product_weights(df)
         df = self.clean_products_data(df)
-        columns_type = {"weight": Float}
-        self.upload_to_db(df, "dim_products", column_types=columns_type)
+        columns = [
+            ["index", BIGINT],
+            ["product_name", VARCHAR(255)],
+            ["category", VARCHAR(50)],
+            ["product_price", VARCHAR(20)],
+            ["weight", Float],
+            ["ean", VARCHAR(30)],
+            ["product_code", VARCHAR(12)],
+            ["date_added", Date],
+            ["uuid", UUID],
+            ["removed", VARCHAR(30)],
+            ["weight_class", VARCHAR(20)],
+        ]
+        self.upload_to_db(
+            df,
+            table_name="dim_products",
+            column_types=columns,
+            using_query=True,
+        )
         # TASK 4 (MILESTONE 3)
         columns = [["weight_class", VARCHAR(20)]]
         self.create_new_column("dim_products", columns=columns)
@@ -266,7 +284,7 @@ class Tasks(DataCleaning, DatabaseConnector, DataExtractor):
         df = self.extract_json_from_s3(url)
         df = self.clean_date_details(df)
         columns_type = {"index": BigInteger}
-        self.upload_to_db(df, "dim_date_times", column_types=columns_type)
+        self.upload_to_db(df, table_name="dim_date_times", column_types=columns_type)
         # TASK 6 (MILESTONE 3)
         columns = [
             ["month", VARCHAR(15)],
@@ -299,36 +317,28 @@ if __name__ == "__main__":
             "4 - DIM_PRODUCTS\n"
             "5 - DIM_DATE_TIMES\n\n"
         )
-        tasks = Tasks()
+        create_dim_tables = CreateDimTables()
         answer = int(input(f"{text}"))
         if answer == 0:
             print(f"Creating all existing tables...")
-            tasks.upload_dim_users()
-            tasks.upload_dim_card_details()
-            tasks.upload_dim_store_details()
-            tasks.upload_dim_products()
-            tasks.upload_dim_date_times()
+            create_dim_tables.upload_dim_users()
+            create_dim_tables.upload_dim_card_details()
+            create_dim_tables.upload_dim_store_details()
+            create_dim_tables.upload_dim_products()
+            create_dim_tables.upload_dim_date_times()
 
         elif answer == 1:
-            tasks.upload_dim_users()
+            create_dim_tables.upload_dim_users()
         elif answer == 2:
-            tasks.upload_dim_card_details()
+            create_dim_tables.upload_dim_card_details()
         elif answer == 3:
-            tasks.upload_dim_store_details()
+            create_dim_tables.upload_dim_store_details()
         elif answer == 4:
-            tasks.upload_dim_products()
+            create_dim_tables.upload_dim_products()
         elif answer == 5:
-            tasks.upload_dim_date_times()
+            create_dim_tables.upload_dim_date_times()
         else:
-            print(f"INVALID OPTION. Select one of the options above")
+            print(f"INVALID OPTION. Select one of the options above.\n")
 
     except ValueError as e:
-        print(f"ERROR -> INVALID NUMBER{e}")
-    # tasks.upload_orders_table()
-
-    # tasks.upload_dim_users()
-    # tasks.upload_dim_card_details()
-    # tasks.upload_dim_store_details()
-    # tasks.upload_dim_products()
-    # tasks.upload_dim_date_times()
-    # Tasks.upload_dim_date_times()
+        print(f"ERROR -> INVALID NUMBER{e}\n")

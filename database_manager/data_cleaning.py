@@ -1,6 +1,6 @@
-from data_extraction import DataExtractor
-from database_utils import DatabaseConnector
-from base_data_cleaner import BaseDataCleaner
+from .data_extraction import DataExtractor
+from .database_utils import DatabaseConnector
+from .base_data_cleaner import BaseDataCleaner
 
 from pandas import DataFrame
 
@@ -11,7 +11,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Clean the user data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
         data_extractor: DataExtractor = DataExtractor()
@@ -59,7 +59,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Clean the card data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
 
@@ -93,17 +93,15 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Clean the store data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
-        # for index, row in df.iterrows():
-        #     print(df.at[index, self._INDEX_LAT])
         df = df.drop(columns=[self._INDEX_LAT])
         df = self.sort_store_columns(df)
 
         for index, row in df.iterrows():
             df.at[index, self._INDEX_STAFF_NUMBERS] = self.clean_integer_number(
-                row[self._INDEX_STAFF_NUMBERS]
+                row[self._INDEX_STAFF_NUMBERS], min_digits=1
             )
             df.at[index, self._INDEX_ADDRESS] = self.clean_strings_with_numbers(
                 row[self._INDEX_ADDRESS]
@@ -132,7 +130,10 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
             df.at[index, self._INDEX_CONTINENT] = self.clean_continent(
                 row[self._INDEX_CONTINENT]
             )
-
+            # if df.at[index, self._INDEX_STAFF_NUMBERS] is None:
+            #     print(
+            #         f"The index {row[self._INDEX]} has {row[self._INDEX_STAFF_NUMBERS]}"
+            #     )
             if df.at[index, self._INDEX_STORE_CODE] is None:
                 print(f"The row with index {row[self._INDEX]} will be deleted!")
                 df.drop(index, inplace=True)
@@ -143,7 +144,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Convert all the weights to a KG.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
         for index, row in df.iterrows():
@@ -157,7 +158,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Clean the products data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
         df.rename(columns={"EAN": "ean"}, inplace=True)
@@ -194,7 +195,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Clean the orders data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
         df = df.drop(["level_0", "first_name", "last_name", "1"], axis=1)
@@ -227,7 +228,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         """
         Clean the date details data.
 
-        Parameters:
+        * Parameters:
             - df: Dataframe
         """
         df.reset_index(inplace=True)
@@ -285,7 +286,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         self, table_name: str, column_name: str, value: str, new_value: str
     ):
         """
-        Parameters:
+        * Parameters:
             - table_name: string
             - column_name: string
             - value: string
@@ -298,7 +299,7 @@ class DataCleaning(BaseDataCleaner, DatabaseConnector):
         self, table_name: str, column_name: str, value: str
     ):
         """
-        Parameters:
+        * Parameters:
             - table_name: string
             - column_name: string
             - value: string -> String value that will be used for validating TRUE statement.

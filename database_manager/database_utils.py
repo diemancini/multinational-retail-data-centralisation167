@@ -1,6 +1,6 @@
 from typing import Dict, List, Union
 
-from base_database_connector import BaseDatabaseConnector
+from .base_database_connector import BaseDatabaseConnector
 
 import pandas as pd
 from pandas import DataFrame
@@ -15,7 +15,7 @@ class DatabaseConnector(BaseDatabaseConnector):
         """
         Read credentials DB.
 
-        Parameters:
+        * Parameters:
             - filename: string
         """
         return self._read_db_creds(filename)
@@ -24,7 +24,7 @@ class DatabaseConnector(BaseDatabaseConnector):
         """
         Create a engine for postgress DataBase.
 
-        Parameters:
+        * Parameters:
             - is_localhost: boolean
         """
         return self._create_engine(is_localhost=is_localhost)
@@ -34,23 +34,20 @@ class DatabaseConnector(BaseDatabaseConnector):
         df: DataFrame,
         table_name: str,
         column_types: Dict = None,
-        is_constraints: bool = False,
-        drop_table: bool = False,
+        using_query: bool = False,
     ):
         """
         Upload the Dataframe data to localhost database.
 
-        Parameters:
+        * Parameters:
             - df: DataFrame,
             - table_name: string,
             - column_types: Dict,
-            - is_constraints: boolean,
-            - drop_table: boolean,
+            - using_query: boolean -> If this option is True, the table will be created and filled with manual sql queries.
         """
         engine: Engine = self._create_engine()
-        if drop_table:
-            self._drop_table(engine, table_name)
-        if is_constraints:
+        self._drop_table(engine, table_name)
+        if using_query:
             self._create_table(engine, table_name, column_types)
             self._insert_data(engine, table_name, df)
         else:
@@ -67,7 +64,7 @@ class DatabaseConnector(BaseDatabaseConnector):
 
     def add_primary_key_on_column(self, table_name: str, column_name: str):
         """
-        Parameters:
+        * Parameters:
             - table_name: string
             - column_name: string
         """
@@ -96,7 +93,7 @@ class DatabaseConnector(BaseDatabaseConnector):
         """
         Upload the Dataframe data to localhost databascrede.
 
-        Parameters:
+        * Parameters:
             - df: DataFrame
             - table_name: string
             - column_types: Dict
@@ -108,7 +105,7 @@ class DatabaseConnector(BaseDatabaseConnector):
             datatype: str = self._convert_sqlalquemy_data_type_to_string(
                 column[self._COLUMN_TYPE]
             )
-            update_query += f"ALTER COLUMN {column[0]} TYPE {datatype} USING ({column[0]}::{datatype})"
+            update_query += f"ALTER COLUMN {column[self._COLUMN_NAME]} TYPE {datatype} USING ({column[self._COLUMN_NAME]}::{datatype})"
             if len(column) == 3:
                 update_query += f"{column[2]}"
             update_query += ",\n"
@@ -118,7 +115,7 @@ class DatabaseConnector(BaseDatabaseConnector):
 
     def create_new_column(self, table_name: str, columns: List[Union[str]]):
         """
-        Parameters:
+        * Parameters:
             - table_name: string
             - columns: List
         """
@@ -128,21 +125,25 @@ class DatabaseConnector(BaseDatabaseConnector):
                 column[self._COLUMN_TYPE]
             )
             new_column_query: str = f"ALTER TABLE {table_name}\n"
-            new_column_query += f"ADD IF NOT EXISTS {column[0]} {datatype}"
+            new_column_query += (
+                f"ADD IF NOT EXISTS {column[self._COLUMN_NAME]} {datatype}"
+            )
             self.commit_db(engine=engine, query=new_column_query)
 
     def select_db(self, select_query: str):
         """
-        Parameters:
+        * Parameters:
             - select_query: string
         """
         engine: Engine = self.init_db_engine()
+        pd.set_option("display.max_colwidth", None)
+        # pd.set_option("display.html.table_schema", True)
         df: DataFrame = pd.read_sql(select_query, con=engine)
         return df
 
     def insert_db(self, insert_query: str, output: bool = True):
         """
-        Parameters:
+        * Parameters:
             - insert_query: string
         """
         engine: Engine = self.init_db_engine()
@@ -152,7 +153,7 @@ class DatabaseConnector(BaseDatabaseConnector):
         self, table_name: str, column_name: str, new_column_name: str
     ):
         """
-        Parameters:
+        * Parameters:
             - table_name: string
             - old_name: string
             - new_name: string
