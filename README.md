@@ -1,10 +1,26 @@
 # MULTINATIONAL-RETAIL-DATA-CENTRALISATION167
 
-## TABLE OF CONTENTS, IF THE README FILE IS LONG
+## TABLE OF CONTENTS
 
-## A DESCRIPTION OF THE PROJECT:
+1. [A DESCRIPTION OF THE PROJECT](#description)
 
-### WHAT IT DOES, THE AIM OF THE PROJECT, AND WHAT YOU LEARNED
+2. [INSTALLATION INSTRUCTIONS](#install)
+
+   2.1 [PYTHON AND GIT](#python_git)
+
+   2.2 [PACKAGES](#packages)
+
+   2.3 [ADDITIONAL FILES IN FOLDERS](#add_files_folders)
+
+   2.4 [INSTALL POSTGRES AND PGADMIN](#packages)
+
+3. [USAGE INSTRUCTIONS](#instructions)
+
+4. [FILE STRUCTURE OF THE PROJECT](#structure)
+
+5. [LICENSE INFORMATION](#license)
+
+## <a id="description">A DESCRIPTION OF THE PROJECT:</a>
 
 This project has a lot of features that we've being learning on data engineer course. What it does is read data from different sources,
 clean it and save in a safe database.
@@ -28,11 +44,11 @@ The main aim and what I've been learned on the project are:
       - Update or inserting data, constraints and attributes on the tables that I created during the project.
       - Using subqueries, joins, common table expressions in select queries was very fun to do it, to see the results of what I've buit so far.
 
-## INSTALLATION INSTRUCTIONS
+At the end, was very fun project to work on it!
 
-### Requirements
+## <a id="install">INSTALLATION INSTRUCTIONS</a>
 
-#### PYTHON AND GIT
+### <a id="python_git">PYTHON AND GIT</a>
 
 Python has to be installed for running this application. Follow these steps below:
 
@@ -43,7 +59,7 @@ Python has to be installed for running this application. Follow these steps belo
 git clone https://github.com/diemancini/multinational-retail-data-centralisation167.git
 ```
 
-#### PACKAGES
+### <a id="packages">PACKAGES</a>
 
 For running this application, it must to be installed:
 
@@ -54,7 +70,7 @@ For running this application, it must to be installed:
 - requests 2.22.0
 - boto3 1.34.122
 
-#### ADDITIONAL FOLDERS
+### <a id="add_files_folders">ADDITIONAL FILES IN FOLDERS</a>
 
 Git does not allowed empty folders on commit In order to avoid unnecessary errors, CREATE 2 FOLDERS in root project:
 
@@ -79,7 +95,7 @@ Git does not allowed empty folders on commit In order to avoid unnecessary error
         RDS_PORT: {your rds port database number}
   ```
 
-#### INSTALL POSTGRES AND PGADMIN
+### <a id="install_pg_pg_admin">INSTALL POSTGRES AND PGADMIN</a>
 
 You can see the instructions on AICore SQL Essentials classes ([SQL Setup](https://colab.research.google.com/github/AI-Core/Content-Public/blob/main/Content/units/Data-Handling/3.%20SQL/1.%20SQL%20Setup/Notebook.ipynb#scrollTo=-SH39buV5zsJ)) in order how to install and run postgres and pgadmin.
 
@@ -125,7 +141,7 @@ waiting for server to start.... done
 server started
 ```
 
-## USAGE INSTRUCTIONS
+## <a id="instructions">USAGE INSTRUCTIONS</a>
 
 After the packages above has installed (in requirements section) and the instructions of TASK 1 in MILESTONE 2, now you have to execute the files below:
 
@@ -163,7 +179,7 @@ Please, which query do you want to be executed?
 9 - AVERAGE TIME TAKEN BETWEEN EACH SALE
 ```
 
-## FILE STRUCTURE OF THE PROJECT
+## <a id="structure">FILE STRUCTURE OF THE PROJECT:</a>
 
 ```
 ├── config
@@ -194,6 +210,6 @@ Please, which query do you want to be executed?
     └── milestone_4_task_9.sql
 ```
 
-## LICENSE INFORMATION
+## <a id="license">LICENSE INFORMATION</a>
 
-##
+Licenced by AICore and Diego Martin Mancini
